@@ -26,7 +26,9 @@ void ACameraDirector::Tick(float DeltaTime)
 
     const float TimeBetweenCameraChanges = 2.0f;
     const float SmoothBlendTime = 0.75f;
+
     TimeToNextCameraChange -= DeltaTime;
+
     if (TimeToNextCameraChange <= 0.0f)
     {
         TimeToNextCameraChange += TimeBetweenCameraChanges;
