@@ -24,7 +24,10 @@ void ACameraDirector::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    // Idle time before this controller switches views
     const float TimeBetweenCameraChanges = 2.0f;
+
+    // Blending duration
     const float SmoothBlendTime = 0.75f;
 
     TimeToNextCameraChange -= DeltaTime;
