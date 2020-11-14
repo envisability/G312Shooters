@@ -117,6 +117,10 @@ void AG312ShootersCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	// Bind DisplayRaycast event
+	PlayerInputComponent->BindAction("Raycast", IE_Pressed, this,
+		&AG312ShootersCharacter::DisplayRaycast);
+
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AG312ShootersCharacter::OnFire);
 
@@ -297,4 +301,22 @@ bool AG312ShootersCharacter::EnableTouchscreenMovement(class UInputComponent* Pl
 	}
 	
 	return false;
+}
+
+void AG312ShootersCharacter::DisplayRaycast()
+{
+	FHitResult* Hitresult = new FHitResult();
+	FVector StartTrace = FirstPersonCameraComponent->GetComponentLocation();
+	FVector ForwardVector = FirstPersonCameraComponent->GetForwardVector();
+	FVector EndTrace = ((ForwardVector * 3319.f) + StartTrace);
+	FCollisionQueryParams* TraceParams = new FCollisionQueryParams();
+
+	if (GetWorld()->LineTraceSingleByChannel(*Hitresult, StartTrace, EndTrace,
+		ECC_Visibility, *TraceParams))
+	{
+		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("You hit: %s"),
+			*Hitresult->Actor->GetName()));
+	}
+
 }
