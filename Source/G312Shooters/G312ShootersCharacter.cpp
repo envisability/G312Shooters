@@ -32,7 +32,8 @@ AG312ShootersCharacter::AG312ShootersCharacter()
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
+	// Create a mesh component that will be used when being viewed from 
+	// a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(true);
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
@@ -46,7 +47,7 @@ AG312ShootersCharacter::AG312ShootersCharacter()
 	FP_Gun->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
 	FP_Gun->bCastDynamicShadow = false;
 	FP_Gun->CastShadow = false;
-	// FP_Gun->SetupAttachment(Mesh1P, TEXT("GripPoint"));
+	FP_Gun->SetupAttachment(Mesh1P, TEXT("GripPoint"));
 	FP_Gun->SetupAttachment(RootComponent);
 
 	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
@@ -120,6 +121,8 @@ void AG312ShootersCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	// Bind DisplayRaycast event
 	PlayerInputComponent->BindAction("Raycast", IE_Pressed, this,
 		&AG312ShootersCharacter::DisplayRaycast);
+	PlayerInputComponent->BindAction("GunLaser", IE_Pressed, this,
+		&AG312ShootersCharacter::GunLaser);
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AG312ShootersCharacter::OnFire);
@@ -306,9 +309,12 @@ bool AG312ShootersCharacter::EnableTouchscreenMovement(class UInputComponent* Pl
 void AG312ShootersCharacter::DisplayRaycast()
 {
 	FHitResult* Hitresult = new FHitResult();
+
+	// Prepare parameters for the LineTrace function
 	FVector StartTrace = FirstPersonCameraComponent->GetComponentLocation();
 	FVector ForwardVector = FirstPersonCameraComponent->GetForwardVector();
 	FVector EndTrace = ((ForwardVector * 3319.f) + StartTrace);
+
 	FCollisionQueryParams* TraceParams = new FCollisionQueryParams();
 
 	if (GetWorld()->LineTraceSingleByChannel(*Hitresult, StartTrace, EndTrace,
@@ -319,4 +325,24 @@ void AG312ShootersCharacter::DisplayRaycast()
 			*Hitresult->Actor->GetName()));
 	}
 
+}
+
+void AG312ShootersCharacter::GunLaser()
+{
+	FHitResult* Hitresult = new FHitResult();
+
+	// Prepare parameters for the LineTrace function
+	FVector StartTrace = VR_MuzzleLocation->GetComponentLocation();
+	FVector ForwardVector = FP_Gun->GetForwardVector();
+	FVector EndTrace = ((ForwardVector * 3319.f) + StartTrace);
+
+	FCollisionQueryParams* TraceParams = new FCollisionQueryParams();
+
+	if (GetWorld()->LineTraceSingleByChannel(*Hitresult, StartTrace, EndTrace,
+		ECC_Visibility, *TraceParams))
+	{
+		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor(255, 0, 0), true);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("You hit: %s"),
+			*Hitresult->Actor->GetName()));
+	}
 }

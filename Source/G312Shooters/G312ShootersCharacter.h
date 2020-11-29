@@ -141,6 +141,7 @@ public:
 
 private:
 	void DisplayRaycast();
+	void GunLaser();
 
 
 };
